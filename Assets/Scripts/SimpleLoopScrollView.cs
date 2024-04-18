@@ -1,4 +1,4 @@
-using D.Unity3dTools;
+﻿using D.Unity3dTools;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -8,6 +8,12 @@ using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using UnityEngine.UI;
 
+public enum EScrollSibling
+{
+    First,
+    Center,
+    Last,
+}
 public class SimpleLoopScrollView : MonoBehaviour
 {
     public Transform view;
@@ -64,19 +70,86 @@ public class SimpleLoopScrollView : MonoBehaviour
         minInfoIndex = 0;
         maxInfoIndex = itemCount - 1;
     }
+    public void ScrollToInfoIndex(int _infoIndex, EScrollSibling _eSibling)
+    {
+        if (infoCount < maxCount) return;
+
+        Vector2 rectSize = rectTransform.rect.size;
+
+        Vector2 _topPos = Vector2.zero;
+        Vector2 _botPos = (-1 * rectSize.y + itemRectSize.y) * Vector2.up;
+        Vector2 cenPos = 0.5f * (_topPos + _botPos);
+        //判断是否原本就处在范围内
+        SimpleLoopItem checkItem = GetItemByInfoIndex(_infoIndex);
+        if (checkItem != null)
+        {
+            Vector2 checkLocPos = checkItem.transform.localPosition;
+            if (checkLocPos.y <= _topPos.y && checkLocPos.y >= _botPos.y) return;
+        }
+
+        //重置item位置
+        Vector2 firstLocPos = Vector2.zero;
+        int firstInfoIndex = 0;
+        if (_eSibling == EScrollSibling.First)
+        {
+            firstLocPos = (_topPos.y + itemRectSize.y) * Vector2.up;
+            firstInfoIndex = _infoIndex - 1;//如果小于0，暂且保留负数，赋值的时候再做处理
+        }
+        if (_eSibling == EScrollSibling.Last)
+        {
+            float posY = _botPos.y + itemRectSize.y * (itemCount - 2);
+            firstLocPos = posY * Vector2.up;
+            firstInfoIndex = _infoIndex - Mathf.CeilToInt(rectSize.y / itemRectSize.y);
+        }
+        if (_eSibling == EScrollSibling.Center)
+        {
+            firstInfoIndex = _infoIndex - (Mathf.CeilToInt(itemCount * 0.5f) - 2) - 1;
+            int lastCount = _infoIndex - firstInfoIndex;
+            float posY = cenPos.y + itemRectSize.y * lastCount;
+            firstLocPos = posY * Vector2.up;
+        }
+
+        for (int i = 0; i < itemCount; i++)
+        {
+            int infoIndex = firstInfoIndex + i;
+            if (infoIndex >= infoCount) infoIndex -= infoCount;
+            else if (infoIndex < 0) infoIndex += infoCount;
+
+            SimpleLoopItem child = itemList[i];
+            child.transform.localPosition = firstLocPos + i * itemRectSize.y * Vector2.down;
+            child.RefreshSelf(infoIndex);
+
+            minInfoIndex = infoIndex < minInfoIndex ? infoIndex : minInfoIndex;
+            maxInfoIndex = infoIndex > maxInfoIndex ? infoIndex : maxInfoIndex;
+        }
+
+    }
+    private SimpleLoopItem GetItemByInfoIndex(int _infoIndex)
+    {
+        foreach (SimpleLoopItem _item in itemList)
+        {
+            if (_item.infoIndex == _infoIndex) return _item;
+        }
+        return null;
+    }
     private void InitSelf()
     {
         if (isInit) return;
         isInit = true;
 
-        rectTransform = GetComponent<RectTransform>();
+        rectTransform = content.GetComponent<RectTransform>();
         RectTransform itemRect = item.GetComponent<RectTransform>();
+
+        //确保计算条件，强制设定UI的对齐方式
+        rectTransform.pivot = itemRect.pivot = Vector2.up;
+        rectTransform.anchorMax = Vector2.up;
+        rectTransform.anchorMin = Vector2.up;
+        itemRect.anchorMax = Vector2.up;
+        itemRect.anchorMin = Vector2.up;
+
         Vector2 rectSize = rectTransform.sizeDelta;
         Vector2 itemRectSize = itemRect.sizeDelta;
         maxCount = Mathf.CeilToInt(rectSize.y / itemRectSize.y) + 2;
-
-        Image img = gameObject.GetOrAddComponent<Image>();
-        img.color = new Color(0, 0, 0, 0);
 
         eventTrigger = gameObject.GetOrAddComponent<EventTrigger>();
         eventTrigger.RemoveAllEventListener();
@@ -92,7 +165,7 @@ public class SimpleLoopScrollView : MonoBehaviour
     }
     private void OnCheckScrollWheel()
     {
-        // ��������ֵĹ���
+        // 检测鼠标滚轮的滚动
         float scrollWheel = Mouse.current.scroll.ReadValue().y;
         MoveScroll(scrollWheel * Vector2.up);
     }
@@ -105,9 +178,9 @@ public class SimpleLoopScrollView : MonoBehaviour
     private void OnDrag(PointerEventData eventData)
     {
         if (infoCount < maxCount) return;
-        // ����Ļ����ת��Ϊ Canvas �ռ�����
+        // 将屏幕坐标转换为 Canvas 空间坐标
         RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out Vector2 localPoint);
-        // ���� UI Ԫ�ص� anchoredPosition
+        // 设置 UI 元素的 anchoredPosition
         Vector2 offsetVec = localPoint - startPos;
         startPos = localPoint;
         offsetVec = new Vector2(0, offsetVec.y);

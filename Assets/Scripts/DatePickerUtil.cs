@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
@@ -6,16 +6,16 @@ using UnityEngine;
 
 public static class DatePickerUtil
 {
-    // ÊäÈëÒ»¸öÊ±¼ä´Á£¨ºÁÃë£©£¬·µ»Ø¶ÔÓ¦µÄDateTime¶ÔÏó
+    // è¾“å…¥ä¸€ä¸ªæ—¶é—´æˆ³ï¼ˆæ¯«ç§’ï¼‰ï¼Œè¿”å›å¯¹åº”çš„DateTimeå¯¹è±¡
     public static DateTime TimestampToDateTime(long timestampMillis)
     {
-        // UnixÆğÊ¼Ê±¼ä£¨1970Äê1ÔÂ1ÈÕ£©µÄDateTime±íÊ¾
+        // Unixèµ·å§‹æ—¶é—´ï¼ˆ1970å¹´1æœˆ1æ—¥ï¼‰çš„DateTimeè¡¨ç¤º
         DateTime epoch = new DateTime(1970, 1, 1, 0, 0, 0, DateTimeKind.Utc);
 
-        // Ìí¼ÓÊ±¼ä´ÁºÁÃëÊı
+        // æ·»åŠ æ—¶é—´æˆ³æ¯«ç§’æ•°
         DateTime dateTime = epoch.AddMilliseconds(timestampMillis);
 
-        // ×ª»»Îª¶«°ËÇøÊ±¼ä£¨±±¾©Ê±¼ä£©
+        // è½¬æ¢ä¸ºä¸œå…«åŒºæ—¶é—´ï¼ˆåŒ—äº¬æ—¶é—´ï¼‰
         dateTime = dateTime.ToLocalTime();
 
         return dateTime;
@@ -28,29 +28,29 @@ public static class DatePickerUtil
     }
     public static void CalculateMonthOffset(int year, int month, int monthOffset, out int resultYear, out int resultMonth)
     {
-        // ¼ÆËã×ÜÔÂ·İ
+        // è®¡ç®—æ€»æœˆä»½
         int totalMonths = year * 12 + month - 1;
 
-        // ¼ÓÉÏÆ«ÒÆÁ¿
+        // åŠ ä¸Šåç§»é‡
         totalMonths += monthOffset;
 
-        // ¼ÆËã½á¹ûÄê·İºÍÔÂ·İ
+        // è®¡ç®—ç»“æœå¹´ä»½å’Œæœˆä»½
         resultYear = totalMonths / 12;
-        resultMonth = totalMonths % 12 + 1; // ¼Ó 1 ÊÇÒòÎªÔÂ·İ´Ó 1 ¿ªÊ¼¼ÆÊı
+        resultMonth = totalMonths % 12 + 1; // åŠ  1 æ˜¯å› ä¸ºæœˆä»½ä» 1 å¼€å§‹è®¡æ•°
     }
     public static DateTime GetFirstDayOfMonth(int year, int month)
     {
-        // ¹¹ÔìÖ¸¶¨Äê·İºÍÔÂ·İµÄµÚÒ»ÌìµÄ DateTime ¶ÔÏó
+        // æ„é€ æŒ‡å®šå¹´ä»½å’Œæœˆä»½çš„ç¬¬ä¸€å¤©çš„ DateTime å¯¹è±¡
         DateTime firstDayOfMonth = new DateTime(year, month, 1);
 
         return firstDayOfMonth;
     }
     public static int ConvertToNumericDayOfWeek(DateTime date)
     {
-        // »ñÈ¡ÈÕÆÚµÄĞÇÆÚ¼¸
+        // è·å–æ—¥æœŸçš„æ˜ŸæœŸå‡ 
         DayOfWeek dayOfWeek = date.DayOfWeek;
 
-        // ½«ĞÇÆÚÈÕ×ª»»Îª 0£¬ĞÇÆÚÒ»×ª»»Îª 1£¬ÒÔ´ËÀàÍÆ
+        // å°†æ˜ŸæœŸæ—¥è½¬æ¢ä¸º 0ï¼Œæ˜ŸæœŸä¸€è½¬æ¢ä¸º 1ï¼Œä»¥æ­¤ç±»æ¨
         switch (dayOfWeek)
         {
             case DayOfWeek.Sunday:
@@ -68,7 +68,7 @@ public static class DatePickerUtil
             case DayOfWeek.Saturday:
                 return 6;
             default:
-                return -1; // Èç¹û³öÏÖÎ´ÖªÇé¿ö£¬·µ»Ø -1 ±íÊ¾´íÎó
+                return -1; // å¦‚æœå‡ºç°æœªçŸ¥æƒ…å†µï¼Œè¿”å› -1 è¡¨ç¤ºé”™è¯¯
         }
     }
 

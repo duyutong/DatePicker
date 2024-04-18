@@ -1,4 +1,4 @@
-using D.Unity3dTools;
+Ôªøusing D.Unity3dTools;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -31,7 +31,6 @@ public class DatePickerWindow : MonoBehaviour
     private int currHour;
     private int currMinute;
 
-    //private string timeShow_Normal = "<color=#C7C8D2>«Î—°‘Ò ±º‰</color>";
     // Start is called before the first frame update
     void Start()
     {
@@ -98,6 +97,8 @@ public class DatePickerWindow : MonoBehaviour
     public void OnClickTimePicker()
     {
         //dropList.DoFadeIn();
+        hourList.ScrollToInfoIndex(currHour, EScrollSibling.Center);
+        minuteList.ScrollToInfoIndex(currMinute, EScrollSibling.Center);
         dropList.gameObject.SetActive(true);
     }
     public void OnClickCloseTimePicker()
