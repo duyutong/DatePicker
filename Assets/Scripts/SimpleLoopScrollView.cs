@@ -19,7 +19,7 @@ public class SimpleLoopScrollView : MonoBehaviour
     public Transform view;
     public Transform content;
     public SimpleLoopItem item;
-
+    public bool isLoop;
 
     private bool isInit;
     private int maxCount;
@@ -70,6 +70,52 @@ public class SimpleLoopScrollView : MonoBehaviour
         minInfoIndex = 0;
         maxInfoIndex = itemCount - 1;
     }
+    private bool CheckIsScrollToBot()
+    {
+        if (isLoop) return false;
+
+        //计算底部位置
+        Vector2 rectSize = rectTransform.rect.size;
+        float botPosY = -1 * rectSize.y + itemRectSize.y;
+
+        //查找infoIndex = infoCount-1的item
+        SimpleLoopItem currLastItem = null;
+        for (int i = 0; i < itemCount; i++)
+        {
+            SimpleLoopItem child = itemList[i];
+            if (child.infoIndex != infoCount - 1) continue;
+            currLastItem = child;
+        }
+        if (currLastItem == null) return false;
+
+        float checkPosY = currLastItem.transform.localPosition.y;
+        //如果item的Y大于等于底部位置
+        if (checkPosY >= botPosY && checkPosY <= 0) return true;
+
+        return false;
+    }
+    private bool CheckIsScrollToTop()
+    {
+        if (isLoop) return false;
+
+        Vector2 rectSize = rectTransform.rect.size;
+        float botPosY = -1 * rectSize.y + itemRectSize.y;
+
+        SimpleLoopItem currFirstItem = null;
+        for (int i = 0; i < itemCount; i++)
+        {
+            SimpleLoopItem child = itemList[i];
+            if (child.infoIndex != 0) continue;
+            currFirstItem = child;
+        }
+
+        if (currFirstItem == null) return false;
+
+        float checkPosY = currFirstItem.transform.localPosition.y;
+        if (checkPosY <= 0 && checkPosY >= botPosY) return true;
+
+        return false;
+    }
     public void ScrollToInfoIndex(int _infoIndex, EScrollSibling _eSibling)
     {
         if (infoCount < maxCount) return;
@@ -109,6 +155,9 @@ public class SimpleLoopScrollView : MonoBehaviour
             firstLocPos = posY * Vector2.up;
         }
 
+
+        minInfoIndex = infoCount;
+        maxCount = -1;
         for (int i = 0; i < itemCount; i++)
         {
             int infoIndex = firstInfoIndex + i;
@@ -180,8 +229,14 @@ public class SimpleLoopScrollView : MonoBehaviour
         if (infoCount < maxCount) return;
         // 将屏幕坐标转换为 Canvas 空间坐标
         RectTransformUtility.ScreenPointToLocalPointInRectangle(rectTransform, eventData.position, eventData.pressEventCamera, out Vector2 localPoint);
-        // 设置 UI 元素的 anchoredPosition
         Vector2 offsetVec = localPoint - startPos;
+
+        //判断边界
+        bool isScrollToBot = CheckIsScrollToBot();
+        bool isScrollToTop = CheckIsScrollToTop();
+        if (offsetVec.y < 0) if (isScrollToTop) return;
+        else if (offsetVec.y > 0) if (isScrollToBot) return;
+
         startPos = localPoint;
         offsetVec = new Vector2(0, offsetVec.y);
         MoveScroll(offsetVec);
