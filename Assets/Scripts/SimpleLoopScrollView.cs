@@ -157,7 +157,7 @@ public class SimpleLoopScrollView : MonoBehaviour
 
 
         minInfoIndex = infoCount;
-        maxCount = -1;
+        //maxCount = -1;
         for (int i = 0; i < itemCount; i++)
         {
             int infoIndex = firstInfoIndex + i;
